@@ -1,213 +1,66 @@
-// Звуковой сигнал
+struct Melody 
+{
+    uint16_t note[3];
+    uint16_t timing[3];
+    uint8_t repeat;
+    String name;
+};
 
-void buzzerON(uint8_t signal) {
-  SIG = signal;
-  buzzCounter = 1;
-  buzTick.setPeriod(50);
-}
+Melody         OPEN = {{690,890,  0},{150,150,  0},1,"OPEN"};
+Melody       CLOSED = {{890,690,  0},{150,150,  0},1,"CLOSED"};
+Melody      DECLINE = {{100,  0,  0},{500,  0,  0},1,"DECLINE"};
+Melody        FAULT = {{100,  0,  0},{100, 30,  0},4,"FAULT"};
+Melody      PROG_ON = {{490,690,890},{150,150,150},1,"PROG_ON"};
+Melody     PROG_OFF = {{890,490,690},{150,150,150},1,"PROG_OFF"};
+Melody       MASTER = {{890,  0,  0},{200,  0,  0},1,"MASTER"};
+Melody        SAVED = {{890,  0,  0},{100, 30,  0},2,"SAVED"};
+Melody      DELETED = {{890,  0,  0},{100, 30,  0},3,"DELETED"};
+Melody BREAKTHROUGH = {{690,200,  0},{300,300,  0},3,"BREAKTHROUGH"};
 
-void buzzerHandler(uint8_t signal) {
-  if (buzTick.ready()) {
-    switch (signal) { // Выбираем сигнал
-      case NOT_NEED:
-        return;
-
-      case OPEN:
-        switch (buzzCounter) {
-          case 1:
-            tone(BUZZER_PIN, 690, 150);
-            buzzCounter++;
-            buzTick.setPeriod(150);
-            return;
-          case 2:
-            tone(BUZZER_PIN, 890, 150);
-            buzTick.setPeriod(0);
-            DEBUGLN("OPENING");
-            return;
-        }
-        return;
-
-      case CLOSED:
-        switch (buzzCounter) {
-          case 1:
-            tone(BUZZER_PIN, 890, 150);
-            buzzCounter++;
-            buzTick.setPeriod(150);
-            return;
-          case 2:
-            tone(BUZZER_PIN, 690, 150);
-            buzTick.setPeriod(0);
-            DEBUGLN("CLOSED");
-            return;
-        }
-        return;
-
-      case DECLINE:
-        tone(BUZZER_PIN, 100, 500);
-        buzTick.setPeriod(0);
-        DEBUGLN("DECLINE");
-        return;
-
-      case FAULT:
-        tone(BUZZER_PIN, 100, 100);
-        buzTick.setPeriod(130);
-        buzzCounter++;
-        if (buzzCounter == 6) {
-          buzTick.setPeriod(0);
-          DEBUGLN("FAULT");
-        }
-        return;
-
-      case PROG_ON:
-        switch (buzzCounter) {
-          case 1:
-            tone(BUZZER_PIN, 490, 150);
-            buzzCounter++;
-            buzTick.setPeriod(150);
-            return;
-          case 2:
-            tone(BUZZER_PIN, 690, 150);
-            buzzCounter++;
-            buzTick.setPeriod(150);
-            return;
-          case 3:
-            tone(BUZZER_PIN, 890, 150);
-            buzTick.setPeriod(0);
-            DEBUGLN("PROG ON");
-            return;
-        }
-        return;
-
-      case PROG_OFF:
-        switch (buzzCounter) {
-          case 1:
-            tone(BUZZER_PIN, 890, 150);
-            buzzCounter++;
-            buzTick.setPeriod(150);
-            return;
-          case 2:
-            tone(BUZZER_PIN, 690, 150);
-            buzzCounter++;
-            buzTick.setPeriod(150);
-            return;
-          case 3:
-            tone(BUZZER_PIN, 490, 150);
-            buzTick.setPeriod(0);
-            DEBUGLN("PROG OFF");
-            return;
-        }
-        return;
-
-      case MASTER:
-        tone(BUZZER_PIN, 890, 100);
-        buzTick.setPeriod(0);
-        DEBUGLN("MASTER MODE");
-        return;
-
-      case SAVED:
-        tone(BUZZER_PIN, 890, 100);
-        buzTick.setPeriod(130);
-        buzzCounter++;
-        if (buzzCounter == 3) {
-          buzTick.setPeriod(0);
-          DEBUGLN("SAVED");
-        }
-        return;
-
-      case DELETED:
-        tone(BUZZER_PIN, 890, 100);
-        buzTick.setPeriod(130);
-        buzzCounter++;
-        if (buzzCounter == 4) {
-          buzTick.setPeriod(0);
-          DEBUGLN("DELETED");
-        }
-        return;
-
-      case BREAKTHROUGH:
-        switch (buzzCounter) {
-          case 1:
-            tone(BUZZER_PIN, 690, 300);
-            buzzCounter++;
-            buzTick.setPeriod(300);
-            DEBUGLN("BREAKTHROUGH");
-            return;
-          case 2: case 4:
-            tone(BUZZER_PIN, 200, 300);
-            buzzCounter++;
-            buzTick.setPeriod(300);
-            return;
-          case 5: case 3:
-            tone(BUZZER_PIN, 690, 300);
-            buzzCounter++;
-            buzTick.setPeriod(300);
-            return;
-          case 6:
-            tone(BUZZER_PIN, 200, 300);
-            buzTick.setPeriod(0);
-            return;
-        }
-        return;
+class BUZZER {
+    public:
+    BUZZER(byte pin) {
+        _pin = pin;
+        pinMode(_pin, OUTPUT);
     }
-  }
+
+    void play(Melody melody) {
+        _melody = melody;
+        _flag = true;
+        _pos = 1;
+        _tmr = 0;
+        Serial.println(_melody.name);
+    }
+
+    void tick() {
+        if (_flag) {
+            if (millis() - _tmr >= _melody.timing[_pos]) {
+                tone(_pin,
+                _melody.note[_pos],
+                _melody.timing[_pos]);
+                if (++_pos == 3) {
+                    _pos = 0;
+                    if (--_melody.repeat == 0) _flag = false;
+                    else _tmr = millis();
+                } else _tmr = millis();
+            }
+        }
+    }
+
+    private:
+    byte _pin;
+    uint32_t _tmr;
+    Melody _melody;
+    bool _flag;
+    uint8_t _pos;
+};
+
+BUZZER buz(4);
+
+void setup() {
+
 }
-
-
-
-
-
-/*
-  void buzz(uint8_t signal) {
-  switch (signal) { // Выбираем сигнал
-    case OPEN:
-      tone(BUZZER_PIN, 690, 150);
-      delay(150);
-      tone(BUZZER_PIN, 890, 150);
-      return;
-    case CLOSED:
-      DEBUGLN("CLOSED");
-      tone(BUZZER_PIN, 890, 150);
-      delay(150);
-      tone(BUZZER_PIN, 690, 150);
-      return;
-    case DECLINE:
-      DEBUGLN("DECLINE");
-      tone(BUZZER_PIN, 100, 300);
-      return;
-    case FAULT:
-      DEBUGLN("ERROR");
-      for (uint8_t i = 0; i < 3; i++) {
-        tone(BUZZER_PIN, 100, 100);
-        delay(130);
-      }
-      return;
-    case PROG:
-      DEBUGLN("PROG");
-      tone(BUZZER_PIN, 890, 300);
-      return;
-    case SAVED:
-      DEBUGLN("SAVED");
-      for (uint8_t i = 0; i < 2; i++) {
-        tone(BUZZER_PIN, 890, 100);
-        delay(130);
-      }
-      return;
-    case DELETED:
-      DEBUGLN("DELETED");
-      for (uint8_t i = 0; i < 3; i++) {
-        tone(BUZZER_PIN, 890, 100);
-        delay(130);
-      }
-      return;
-    case BREAKTHROUGH:
-      DEBUGLN("BREAKTHROUGH");
-      for (uint8_t i = 0; i < 2; i++) {
-        tone(BUZZER_PIN, 690, 500);
-        delay(500);
-        tone(BUZZER_PIN, 200, 500);
-        delay(500);
-      }
-      return;
-  }
-  }
-*/
+void loop() {
+buz.tick();
+if (false) buz.play(OPEN);
+}
