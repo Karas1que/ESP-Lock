@@ -17,11 +17,11 @@ void unlockHandler(void) {
         digitalWrite(LOCK_PIN, LOW);
         if (isOpen()) {
           locked = false;                   // Замок открыт
-          String str = makeStr();
-          sendUDP(str);
+//          String str = makeStr();
+//          sendUDP(str);
         }
         else {                              // Если концевик показывает что замок до сих пор закрыт - даём сигнал ошибки
-          buzzerON(FAULT);
+          buz.play(FAULT);
 
         }
         unlockTick.setPeriod(0);

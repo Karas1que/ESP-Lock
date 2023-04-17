@@ -9,8 +9,8 @@
    При отсутствии записанных ключей дверь блокироваться не будет.
 */
 #include "Timer.h"                // Класс таймера
-#include "Constants.h"            // Настройки
-#include "BUZZER.h"               // Класс и структура баззера
+
+#include "BUZZER.h"                // Класс и структура баззера
 #include <EEPROM.h>               // Библиотека EEPROM для хранения ключей
 #include <EncButton.h>
 

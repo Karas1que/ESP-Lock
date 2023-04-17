@@ -9,7 +9,7 @@ void progModeHandler(void) {
   switch (progMode) {
     case 0:
       if (!locked and btn.held()) {          // Если откыта дверь, режим программирования отключен и нажата кнопка
-        buzzerON(PROG_ON);
+        buz.play(PROG_ON);
         progMode = true;                                      //
         prog.setPeriod(20 * 1000);                            // Включаем режим программирования
         DEBUGLN("Waiting for tag...");                        //
@@ -18,7 +18,7 @@ void progModeHandler(void) {
     case 1:
       if (prog.ready() or !prog.enabled() or locked)       // Отключаем режим программирования если таймер или закрыли дверь
       {
-        buzzerON(PROG_OFF);
+        buz.play(PROG_OFF);
         progMode = false;
         masterFlag = false;
         prog.setPeriod(0);
@@ -40,10 +40,10 @@ void rfHandler(void)  {
               DEBUGLINE("Readed tag = ", tag);
               DEBUGLINE("Position in storage = ", tagpos);
               if (tagpos > 0) {                                                             // И если метка есть в базе
-                buzzerON(OPEN);                                                             // Подаем сигнал успеха
+                buz.play(OPEN);                                                             // Подаем сигнал успеха
                 unlock();                                                                   // Разблокируем
               }
-              else buzzerON(DECLINE);                                                       // Если метки в базе нет - выдаем отказ
+              else buz.play(DECLINE);                                                       // Если метки в базе нет - выдаем отказ
             }
           }
         }
@@ -55,7 +55,7 @@ void rfHandler(void)  {
             int8_t tagpos = foundTag(tag);                                                  // Ищем метку в базе
             if (tagpos == 1) {
               masterFlag = true;                                             // Если поднесена мастер-метка ждем новую для записи
-              buzzerON(MASTER);
+              buz.play(MASTER);
             }
             if (tagpos == -1) {
               if (masterFlag) {
@@ -64,7 +64,7 @@ void rfHandler(void)  {
                 prog.setPeriod(20 * 1000);
               }
               else {
-                buzzerON(DECLINE);
+                buz.play(DECLINE);
               }
             }
             if (tagpos > 1) {

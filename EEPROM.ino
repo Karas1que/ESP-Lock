@@ -52,12 +52,12 @@ void saveTag(uint32_t tag) {
     EEPROM.put(newTagAddr, tag);                                                // Пишем новую метку
     EEPROM.write(EE_TAGS_NUM_ADDR, ++savedTags);                                // Увеличиваем кол-во меток и пишем в EEPROM
     EEPROM.commit();
-    buzzerON(SAVED);                                                                // Подаем сигнал успеха
-    String str = makeStr();
-    sendUDP(str);
+    buz.play(SAVED);                                                                // Подаем сигнал успеха
+//    String str = makeStr();
+//    sendUDP(str);
   }
   else {                                                                        // Лимит меток при попытке записи новой
-    buzzerON(DECLINE);                                                              // Выдаем отказ
+    buz.play(DECLINE);                                                              // Выдаем отказ
   }
 }
 
@@ -70,7 +70,7 @@ void deleteTag(uint8_t tagpos) {
   }
   EEPROM.write(EE_TAGS_NUM_ADDR, --savedTags);                                  // Уменьшаем кол-во меток и пишем в EEPROM
   EEPROM.commit();
-  buzzerON(DELETED);                                                            // Подаем сигнал
-  String str = makeStr();
-  sendUDP(str);
+  buz.play(DELETED);                                                            // Подаем сигнал
+//  String str = makeStr();
+//  sendUDP(str);
 }
